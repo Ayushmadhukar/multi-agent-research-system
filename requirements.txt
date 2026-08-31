@@ -6,10 +6,6 @@ langchain-community>=0.3.0
 # --- Agents (create_react_agent lives in LangGraph's prebuilt module) ---
 langgraph>=0.2.0
 
-# --- Gemini (LLM) ---
-langchain-google-genai>=2.0.0
-google-generativeai>=0.8.0
-
 # --- Tavily (search tool) ---
 tavily-python>=0.5.0
 langchain-tavily>=0.1.0

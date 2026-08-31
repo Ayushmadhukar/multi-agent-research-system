@@ -1,5 +1,6 @@
 from langchain.agents import create_agent
-from langchain_mistralai  import ChatMistralAI
+from langchain_mistralai import ChatMistralAI
+from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from tools import web_search, scrape_website
@@ -8,14 +9,29 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-llm=ChatMistralAI(
-    model_name="mistral-7b-instruct-v0.1",
+llm = ChatMistralAI(
+    model_name="mistral-small-latest",
     mistral_api_key=os.getenv("MISTRAL_API_KEY")
-)   
+)
+
+# Configure Groq model only if explicitly enabled and credentials are present.
+groq_model_name = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+use_groq = os.getenv("USE_GROQ", "false").lower() in ("1", "true", "yes") and bool(os.getenv("GROQ_API_KEY"))
+models = None
+if use_groq:
+    try:
+        models = ChatGroq(
+            model=groq_model_name,
+            temperature=0,
+            groq_api_key=os.getenv("GROQ_API_KEY")
+        )
+    except Exception:
+        models = None
 
 def build_search_agent():
+    # Prefer Groq if available; otherwise fall back to the Mistral LLM.
     return create_agent(
-        model = llm,
+        model = models if models is not None else llm,
         tools = [web_search]
     )
 
@@ -68,6 +84,6 @@ One line verdict:
 ..."""),
 ])
 
-critic_chain = critic_prompt | llm | StrOutputParser()
+critic_chain = critic_prompt | (models if models is not None else llm) | StrOutputParser()
 
  
