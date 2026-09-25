@@ -4,85 +4,64 @@ import ResearchForm from './components/ResearchForm';
 import StatusTracker from './components/StatusTracker';
 import ResearchWorkspace from './components/ResearchWorkspace';
 import HistoryDrawer from './components/HistoryDrawer';
+import { AlertCircle, X } from 'lucide-react';
 
 export default function App() {
   const [theme, setTheme] = useState('dark');
   const [currentReport, setCurrentReport] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [statusData, setStatusData] = useState({
-    phase: 'STARTING',
-    message: '',
-    progress: 0,
-    topic: '',
-  });
+  const [statusData, setStatusData] = useState({ phase: 'STARTING', message: '', progress: 0, topic: '' });
   const [errorMessage, setErrorMessage] = useState('');
   const [history, setHistory] = useState([]);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
   const pollingRef = useRef(null);
 
-  // Fetch initial history
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
+
   useEffect(() => {
     fetchHistory();
-    return () => {
-      if (pollingRef.current) clearInterval(pollingRef.current);
-    };
+    return () => { if (pollingRef.current) clearInterval(pollingRef.current); };
   }, []);
 
   const fetchHistory = async () => {
     try {
       const res = await fetch('/api/history');
-      if (res.ok) {
-        const data = await res.json();
-        setHistory(data);
-      }
-    } catch (err) {
-      console.warn('Backend history unreachable:', err);
-    }
+      if (res.ok) setHistory(await res.json());
+    } catch (_) {}
   };
 
   const handleStartResearch = async (topic, depth = 'standard') => {
     setIsLoading(true);
     setErrorMessage('');
     setCurrentReport(null);
-    setStatusData({
-      phase: 'DISCOVERY',
-      message: 'Initializing Search Agent & querying Tavily for global intelligence...',
-      progress: 15,
-      topic,
-    });
+    setStatusData({ phase: 'DISCOVERY', message: 'Initializing pipeline…', progress: 10, topic });
 
     try {
-      // 1. Dispatch research job to FastAPI backend
-      const response = await fetch('/api/research', {
+      const res = await fetch('/api/research', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ topic, depth }),
       });
 
-      if (!response.ok) {
-        const errJson = await response.json().catch(() => ({}));
-        throw new Error(errJson.detail || `Server error: ${response.status}`);
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || `Server error ${res.status}`);
       }
 
-      const { task_id } = await response.json();
+      const { task_id } = await res.json();
 
-      // 2. Poll status endpoint every 1.2s to track real agent progress
       if (pollingRef.current) clearInterval(pollingRef.current);
 
       pollingRef.current = setInterval(async () => {
         try {
-          const statusRes = await fetch(`/api/research/status/${task_id}`);
-          if (!statusRes.ok) return;
+          const s = await fetch(`/api/research/status/${task_id}`);
+          if (!s.ok) return;
+          const data = await s.json();
 
-          const data = await statusRes.json();
-          
-          setStatusData({
-            phase: data.phase || 'ANALYSIS',
-            message: data.message || 'Processing pipeline agents...',
-            progress: data.progress || 30,
-            topic,
-          });
+          setStatusData({ phase: data.phase || 'ANALYSIS', message: data.message || '', progress: data.progress || 30, topic });
 
           if (data.phase === 'COMPLETED' && data.result) {
             clearInterval(pollingRef.current);
@@ -94,33 +73,24 @@ export default function App() {
             clearInterval(pollingRef.current);
             pollingRef.current = null;
             setIsLoading(false);
-            setErrorMessage(data.message || 'Pipeline execution failed.');
+            setErrorMessage(data.message || 'Pipeline failed.');
           }
-        } catch (pollErr) {
-          console.warn('Status poll retry...', pollErr);
-        }
+        } catch (_) {}
       }, 1200);
 
     } catch (err) {
-      console.error('Failed to initiate research on backend:', err);
       setIsLoading(false);
-      setErrorMessage(`Backend connection error: ${err.message}. Please ensure the FastAPI server is running with 'python backend/main.py'.`);
+      setErrorMessage(`Connection error: ${err.message}. Make sure the backend is running.`);
     }
   };
 
   const handleDeleteReport = async (id) => {
     setHistory((prev) => prev.filter((item) => item.id !== id));
-    try {
-      await fetch(`/api/history/${id}`, { method: 'DELETE' });
-    } catch (err) {
-      console.warn('Could not delete from backend:', err);
-    }
+    try { await fetch(`/api/history/${id}`, { method: 'DELETE' }); } catch (_) {}
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative' }}>
-      
-      {/* Top Navigation Bar */}
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 1 }}>
       <Navbar
         theme={theme}
         setTheme={setTheme}
@@ -135,107 +105,102 @@ export default function App() {
         isGenerating={isLoading}
       />
 
-      {/* Main Content Area */}
-      <main style={{ flex: 1, position: 'relative', zIndex: 1, paddingBottom: '3rem' }}>
-        
-        {/* Error Alert Box */}
+      <main style={{ flex: 1 }}>
+        {/* Error banner */}
         {errorMessage && (
-          <div style={{ maxWidth: '900px', margin: '2rem auto 0', padding: '0 1rem' }}>
-            <div style={{
-              background: 'rgba(244, 63, 94, 0.15)',
-              border: '1px solid rgba(244, 63, 94, 0.4)',
-              borderRadius: 'var(--radius-md)',
-              padding: '1.25rem',
-              color: '#FECDD3',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '1rem'
-            }}>
-              <div>
-                <strong>Pipeline Error:</strong> {errorMessage}
-              </div>
+          <div
+            style={{
+              maxWidth: '760px',
+              margin: '1.5rem auto 0',
+              padding: '0 1.5rem',
+            }}
+          >
+            <div
+              style={{
+                background: 'var(--red-dim)',
+                border: '1px solid var(--red-border)',
+                borderRadius: 'var(--r-md)',
+                padding: '0.875rem 1rem',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '0.75rem',
+              }}
+            >
+              <AlertCircle size={16} color="var(--red)" style={{ flexShrink: 0, marginTop: '1px' }} />
+              <span style={{ flex: 1, fontSize: '0.875rem', color: 'var(--text-primary)', lineHeight: 1.5 }}>
+                {errorMessage}
+              </span>
               <button
                 onClick={() => setErrorMessage('')}
-                className="btn btn-ghost"
-                style={{ padding: '0.25rem 0.5rem', color: '#FECDD3' }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: 'var(--text-tertiary)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: 0,
+                  flexShrink: 0,
+                }}
               >
-                Dismiss
+                <X size={15} strokeWidth={2} />
               </button>
             </div>
           </div>
         )}
 
-        {/* State 1: Active Loading / Live Pipeline Execution */}
+        {/* Loading */}
         {isLoading && (
-          <div style={{ paddingTop: '2.5rem' }}>
-            <StatusTracker
-              phase={statusData.phase}
-              message={statusData.message}
-              progress={statusData.progress}
-              topic={statusData.topic}
-            />
-          </div>
+          <StatusTracker
+            phase={statusData.phase}
+            message={statusData.message}
+            progress={statusData.progress}
+            topic={statusData.topic}
+          />
         )}
 
-        {/* State 2: Report Generated & Active */}
+        {/* Report workspace */}
         {!isLoading && currentReport && (
           <div style={{ paddingTop: '1.5rem' }}>
             <ResearchWorkspace
               report={currentReport}
-              onNewResearch={() => {
-                setCurrentReport(null);
-                setErrorMessage('');
-              }}
+              onNewResearch={() => { setCurrentReport(null); setErrorMessage(''); }}
             />
           </div>
         )}
 
-        {/* State 3: Home / Prompt Command Center */}
+        {/* Home / search */}
         {!isLoading && !currentReport && (
-          <ResearchForm
-            onStartResearch={handleStartResearch}
-            isLoading={isLoading}
-          />
+          <ResearchForm onStartResearch={handleStartResearch} isLoading={isLoading} />
         )}
       </main>
 
-      {/* History Slide-out Drawer */}
+      {/* Footer */}
+      <footer
+        className="no-print"
+        style={{
+          borderTop: '1px solid var(--border-faint)',
+          padding: '1rem 1.5rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '0.5rem',
+        }}
+      >
+        <span style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)', fontWeight: 600 }}>ResearchX</span>
+        <span style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)' }}>
+          Multi-Agent Intelligence Engine · 2026
+        </span>
+      </footer>
+
       <HistoryDrawer
         isOpen={isHistoryOpen}
         onClose={() => setIsHistoryOpen(false)}
         history={history}
-        onSelectReport={(rep) => {
-          setCurrentReport(rep);
-          setErrorMessage('');
-        }}
+        onSelectReport={(rep) => { setCurrentReport(rep); setErrorMessage(''); }}
         onDeleteReport={handleDeleteReport}
       />
-
-      {/* Footer */}
-      <footer
-        className="action-bar-no-print"
-        style={{
-          borderTop: '1px solid var(--border-subtle)',
-          padding: '1.5rem 1rem',
-          textAlign: 'center',
-          fontSize: '0.85rem',
-          color: 'var(--text-muted)',
-          backgroundColor: 'var(--bg-glass)',
-          backdropFilter: 'blur(10px)',
-          zIndex: 10,
-        }}
-      >
-        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ fontWeight: 700, color: 'var(--text-heading)' }}>ResearchX</span>
-            <span>• Autonomous Multi-Agent Intelligence Engine</span>
-          </div>
-          <div>
-            <span>Direct Pipeline Integration Active • 2026 Enterprise Edition</span>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

@@ -1,182 +1,136 @@
 import React from 'react';
-import { Award, CheckCircle2, ShieldCheck, Sparkles } from 'lucide-react';
+import { CheckCircle2, AlertCircle } from 'lucide-react';
+
+function MetricBar({ label, value, max = 10 }) {
+  const pct = Math.min(100, Math.round((value / max) * 100));
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
+        <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>{label}</span>
+        <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-primary)', fontVariantNumeric: 'tabular-nums' }}>
+          {value.toFixed(1)}
+        </span>
+      </div>
+      <div className="progress-track">
+        <div
+          style={{
+            height: '100%',
+            width: `${pct}%`,
+            background: 'var(--accent)',
+            borderRadius: 'var(--r-full)',
+            transition: 'width 0.8s ease',
+          }}
+        />
+      </div>
+    </div>
+  );
+}
 
 export default function Scorecard({ scorecard }) {
   if (!scorecard) return null;
 
-  const score = scorecard.overall_score || 9.4;
-  const clarity = scorecard.clarity_score || 9.6;
-  const depth = scorecard.depth_score || 9.3;
-  const rigor = scorecard.rigor_score || 9.5;
+  const score   = scorecard.overall_score || 0;
+  const clarity = scorecard.clarity_score || 0;
+  const depth   = scorecard.depth_score   || 0;
+  const rigor   = scorecard.rigor_score   || 0;
+
+  const getGrade = (s) => {
+    if (s >= 9) return { label: 'Excellent', color: 'var(--green)' };
+    if (s >= 7) return { label: 'Good',      color: 'var(--accent)' };
+    if (s >= 5) return { label: 'Fair',      color: 'var(--amber)' };
+    return          { label: 'Needs work',  color: 'var(--red)' };
+  };
+  const grade = getGrade(score);
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', marginTop: '1rem' }}>
-      
-      {/* Left: Numerical Score & Metric Gauges */}
-      <div
-        className="glass-panel"
-        style={{
-          padding: '2rem',
-          borderRadius: 'var(--radius-xl)',
-          background: 'var(--bg-surface)',
-          border: '1px solid var(--border-subtle)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          textAlign: 'center'
-        }}
-      >
-        <span className="badge badge-purple" style={{ marginBottom: '1.25rem', padding: '0.4rem 0.9rem' }}>
-          <Sparkles size={14} /> Automated Peer-Review
-        </span>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
 
-        {/* Circular Dial Graphic */}
-        <div style={{ position: 'relative', width: '160px', height: '160px', margin: '0 auto 1.5rem' }}>
-          <svg viewBox="0 0 100 100" width="100%" height="100%">
-            <circle
-              cx="50"
-              cy="50"
-              r="40"
-              fill="none"
-              stroke="rgba(139, 92, 246, 0.12)"
-              strokeWidth="8"
-            />
-            <circle
-              cx="50"
-              cy="50"
-              r="40"
-              fill="none"
-              stroke="url(#researchx-grad-1)"
-              strokeWidth="8"
-              strokeDasharray="251.2"
-              strokeDashoffset={251.2 - (251.2 * (score / 10))}
-              strokeLinecap="round"
-              transform="rotate(-90 50 50)"
-              style={{
-                filter: 'drop-shadow(0 0 10px rgba(139, 92, 246, 0.4))',
-                transition: 'stroke-dashoffset 1s ease'
-              }}
-            />
-          </svg>
-
-          {/* Centered Score */}
-          <div style={{
-            position: 'absolute',
-            inset: 0,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <span style={{ fontSize: '2.5rem', fontWeight: 900, fontFamily: 'var(--font-display)', color: 'var(--text-heading)', lineHeight: 1 }}>
-              {score}
-            </span>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>
-              OUT OF 10
-            </span>
-          </div>
-        </div>
-
-        {/* Verdict Badge */}
-        <div style={{
-          padding: '0.5rem 1rem',
-          borderRadius: 'var(--radius-full)',
-          background: 'rgba(16, 185, 129, 0.12)',
-          border: '1px solid rgba(16, 185, 129, 0.35)',
-          color: 'var(--brand-success)',
-          fontWeight: 700,
-          fontSize: '0.8rem',
-          letterSpacing: '0.05em',
-          textTransform: 'uppercase',
-          marginBottom: '1.5rem'
-        }}>
-          {scorecard.verdict || 'EXECUTIVE READY • VERIFIED'}
-        </div>
-
-        {/* Detailed Metrics Sub-bars */}
-        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-          {[
-            { label: 'Analytical Clarity', value: clarity, max: 10, color: 'var(--grad-accent)' },
-            { label: 'Evidence Depth', value: depth, max: 10, color: 'var(--grad-logo)' },
-            { label: 'Factual Rigor', value: rigor, max: 10, color: 'var(--grad-emerald)' },
-          ].map((m, idx) => (
-            <div key={idx} style={{ textAlign: 'left' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.3rem' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>{m.label}</span>
-                <span style={{ fontWeight: 700, color: 'var(--text-heading)' }}>{m.value}/10</span>
-              </div>
-              <div style={{ height: '6px', background: 'rgba(0,0,0,0.06)', borderRadius: '999px', overflow: 'hidden' }}>
-                <div style={{
-                  width: `${(m.value / m.max) * 100}%`,
-                  height: '100%',
-                  background: m.color,
-                  borderRadius: '999px'
-                }}></div>
-              </div>
+      {/* Score panel */}
+      <div className="card" style={{ padding: '1.5rem' }}>
+        {/* Overall score */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+          <div>
+            <div style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.2rem' }}>
+              Overall Score
             </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Right: Strengths & Peer Review Commentary */}
-      <div
-        className="glass-panel"
-        style={{
-          padding: '2rem',
-          borderRadius: 'var(--radius-xl)',
-          background: 'var(--bg-surface)',
-          border: '1px solid var(--border-subtle)',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between'
-        }}
-      >
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-            <ShieldCheck size={20} color="var(--brand-success)" />
-            <h4 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-heading)', margin: 0 }}>
-              Verification & Strengths
-            </h4>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
+              <span style={{ fontSize: '2.5rem', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+                {score.toFixed(1)}
+              </span>
+              <span style={{ fontSize: '1rem', color: 'var(--text-tertiary)', fontWeight: 500 }}>/10</span>
+            </div>
           </div>
-
-          <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
-            Automated critique validation assessed structure, empirical backing, and logical coherence:
-          </p>
-
-          {/* Strengths List */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' }}>
-            {(scorecard.strengths || [
-              "Balanced breakdown of technical architecture and real-world deployment metrics",
-              "Primary source citations from peer-reviewed databases",
-              "Clear, actionable strategic takeaways for decision makers"
-            ]).map((str, idx) => (
-              <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.65rem' }}>
-                <CheckCircle2 size={18} color="var(--brand-success)" style={{ flexShrink: 0, marginTop: '2px' }} />
-                <span style={{ fontSize: '0.9rem', color: 'var(--text-primary)', lineHeight: 1.5 }}>
-                  {str}
-                </span>
-              </div>
-            ))}
-          </div>
+          <span
+            className="badge"
+            style={{
+              background: `${grade.color}18`,
+              color: grade.color,
+              border: `1px solid ${grade.color}30`,
+              fontSize: '0.75rem',
+              padding: '0.3rem 0.75rem',
+            }}
+          >
+            {grade.label}
+          </span>
         </div>
 
-        {/* Critique Note */}
-        {scorecard.critique && (
-          <div style={{
-            padding: '1rem 1.25rem',
-            borderRadius: 'var(--radius-md)',
-            background: 'rgba(139, 92, 246, 0.08)',
-            border: '1px solid rgba(139, 92, 246, 0.25)',
-          }}>
-            <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--brand-primary)', marginBottom: '0.35rem' }}>
-              Critic Summary Verdict
-            </div>
-            <div style={{ fontSize: '0.88rem', color: 'var(--text-primary)', fontStyle: 'italic', lineHeight: 1.5 }}>
-              "{scorecard.critique}"
-            </div>
+        {/* Metric bars */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <MetricBar label="Analytical Clarity" value={clarity} />
+          <MetricBar label="Evidence Depth"     value={depth}   />
+          <MetricBar label="Factual Rigor"      value={rigor}   />
+        </div>
+
+        {/* Verdict */}
+        {scorecard.verdict && (
+          <div
+            style={{
+              marginTop: '1.25rem',
+              padding: '0.75rem',
+              background: 'var(--bg-elevated)',
+              border: '1px solid var(--border-faint)',
+              borderRadius: 'var(--r-md)',
+              fontSize: '0.8rem',
+              color: 'var(--text-secondary)',
+              fontStyle: 'italic',
+              lineHeight: 1.5,
+            }}
+          >
+            "{scorecard.verdict}"
           </div>
         )}
       </div>
+
+      {/* Strengths panel */}
+      <div className="card" style={{ padding: '1.5rem' }}>
+        <div style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '1rem' }}>
+          Strengths
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.7rem', marginBottom: '1.5rem' }}>
+          {(scorecard.strengths?.length > 0
+            ? scorecard.strengths
+            : ['Multi-source evidence synthesis', 'Structured and coherent report', 'Clear actionable takeaways']
+          ).map((s, i) => (
+            <div key={i} style={{ display: 'flex', gap: '0.6rem', alignItems: 'flex-start' }}>
+              <CheckCircle2 size={14} color="var(--green)" strokeWidth={2} style={{ flexShrink: 0, marginTop: '2px' }} />
+              <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{s}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Critique note */}
+        {scorecard.critique && scorecard.critique.length < 600 && (
+          <div>
+            <div style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.6rem' }}>
+              Reviewer Notes
+            </div>
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-tertiary)', lineHeight: 1.65, margin: 0 }}>
+              {scorecard.critique.slice(0, 400)}{scorecard.critique.length > 400 ? '…' : ''}
+            </p>
+          </div>
+        )}
+      </div>
+
     </div>
   );
 }

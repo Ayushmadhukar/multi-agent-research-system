@@ -1,31 +1,19 @@
 import React, { useState } from 'react';
-import { X, Search, Clock, Calendar, Trash2, ArrowRight, BookOpen } from 'lucide-react';
+import { X, Search, Trash2, ArrowRight, BookOpen, Clock } from 'lucide-react';
 
-export default function HistoryDrawer({
-  isOpen,
-  onClose,
-  history = [],
-  onSelectReport,
-  onDeleteReport,
-}) {
+export default function HistoryDrawer({ isOpen, onClose, history = [], onSelectReport, onDeleteReport }) {
   const [searchTerm, setSearchTerm] = useState('');
 
   if (!isOpen) return null;
 
-  const filteredHistory = history.filter((item) =>
+  const filtered = history.filter((item) =>
     item.topic.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (item.tags && item.tags.some(t => t.toLowerCase().includes(searchTerm.toLowerCase())))
+    item.tags?.some((t) => t.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   return (
     <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 100,
-        display: 'flex',
-        justifyContent: 'flex-end',
-      }}
+      style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', justifyContent: 'flex-end' }}
     >
       {/* Backdrop */}
       <div
@@ -33,203 +21,199 @@ export default function HistoryDrawer({
         style={{
           position: 'absolute',
           inset: 0,
-          background: 'rgba(5, 8, 20, 0.6)',
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
-          transition: 'opacity 0.3s ease',
+          background: 'rgba(0,0,0,0.5)',
+          backdropFilter: 'blur(4px)',
         }}
       />
 
-      {/* Drawer Content */}
+      {/* Panel */}
       <div
-        className="history-drawer"
         style={{
           position: 'relative',
           width: '100%',
-          maxWidth: '480px',
+          maxWidth: '420px',
           height: '100%',
-          background: 'var(--bg-surface-elevated)',
-          borderLeft: '1px solid var(--border-medium)',
-          boxShadow: 'var(--shadow-lg)',
+          background: 'var(--bg-surface)',
+          borderLeft: '1px solid var(--border-default)',
           display: 'flex',
           flexDirection: 'column',
           zIndex: 101,
-          animation: 'slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          animation: 'slide-in-right 0.25s ease',
+          boxShadow: 'var(--shadow-xl)',
         }}
       >
         {/* Header */}
-        <div style={{
-          padding: '1.5rem',
-          borderBottom: '1px solid var(--border-subtle)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-            <div style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '8px',
-              background: 'var(--grad-logo)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#FFF'
-            }}>
-              <BookOpen size={18} />
-            </div>
-            <div>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0, color: 'var(--text-heading)' }}>
-                Intelligence Library
-              </h3>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                {history.length} Research Dossiers Cached
-              </span>
-            </div>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '1rem 1.25rem',
+            borderBottom: '1px solid var(--border-default)',
+          }}
+        >
+          <div>
+            <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
+              Research Library
+            </h3>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>
+              {history.length} saved reports
+            </span>
           </div>
-
-          <button
-            onClick={onClose}
-            className="btn btn-ghost btn-icon"
-            style={{ borderRadius: 'var(--radius-md)' }}
-            title="Close Drawer"
-          >
-            <X size={20} />
+          <button onClick={onClose} className="btn btn-ghost btn-icon" style={{ width: '32px', height: '32px' }}>
+            <X size={16} />
           </button>
         </div>
 
-        {/* Search Bar */}
-        <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--border-subtle)' }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            background: 'var(--bg-surface)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: 'var(--radius-md)',
-            padding: '0.5rem 0.85rem'
-          }}>
-            <Search size={16} color="var(--text-muted)" />
+        {/* Search */}
+        <div style={{ padding: '0.75rem 1.25rem', borderBottom: '1px solid var(--border-faint)' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              background: 'var(--bg-elevated)',
+              border: '1px solid var(--border-default)',
+              borderRadius: 'var(--r-md)',
+              padding: '0.4rem 0.75rem',
+            }}
+          >
+            <Search size={14} color="var(--text-tertiary)" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search previous topics or tags..."
+              placeholder="Search reports…"
               style={{
                 background: 'transparent',
                 border: 'none',
                 outline: 'none',
                 color: 'var(--text-primary)',
-                fontSize: '0.9rem',
-                width: '100%'
+                fontSize: '0.875rem',
+                width: '100%',
+                fontFamily: 'var(--font)',
               }}
             />
           </div>
         </div>
 
-        {/* List of Previous Reports */}
-        <div style={{
-          flex: 1,
-          overflowY: 'auto',
-          padding: '1.25rem 1.5rem',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '1rem',
-        }}>
-          {filteredHistory.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-muted)' }}>
-              <BookOpen size={36} style={{ opacity: 0.4, marginBottom: '0.75rem' }} />
-              <p style={{ fontSize: '0.95rem', margin: 0 }}>No matching dossiers found.</p>
+        {/* List */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '0.75rem' }}>
+          {filtered.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-tertiary)' }}>
+              <BookOpen size={28} strokeWidth={1.5} style={{ opacity: 0.4, marginBottom: '0.5rem' }} />
+              <p style={{ fontSize: '0.875rem', margin: 0, color: 'inherit' }}>
+                {searchTerm ? 'No matching reports.' : 'No reports yet.'}
+              </p>
             </div>
           ) : (
-            filteredHistory.map((item) => (
-              <div
-                key={item.id}
-                className="glass-panel"
-                style={{
-                  padding: '1.25rem',
-                  borderRadius: 'var(--radius-md)',
-                  background: 'var(--bg-surface)',
-                  border: '1px solid var(--border-subtle)',
-                  cursor: 'pointer',
-                  transition: 'all var(--transition-fast)'
-                }}
-                onClick={() => {
-                  onSelectReport(item);
-                  onClose();
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--brand-primary)';
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--border-subtle)';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }}
-              >
-                {/* Meta Header */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                    <Calendar size={12} /> {item.timestamp}
-                  </span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+              {filtered.map((item) => (
+                <div
+                  key={item.id}
+                  onClick={() => { onSelectReport(item); onClose(); }}
+                  style={{
+                    padding: '0.875rem 1rem',
+                    borderRadius: 'var(--r-md)',
+                    border: '1px solid var(--border-faint)',
+                    background: 'var(--bg-surface)',
+                    cursor: 'pointer',
+                    transition: 'all var(--t-fast)',
+                    position: 'relative',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'var(--bg-elevated)';
+                    e.currentTarget.style.borderColor = 'var(--border-default)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'var(--bg-surface)';
+                    e.currentTarget.style.borderColor = 'var(--border-faint)';
+                  }}
+                >
+                  {/* Score badge */}
                   {item.scorecard?.overall_score && (
-                    <span className="badge badge-green" style={{ fontSize: '0.7rem' }}>
+                    <span
+                      className="badge badge-green"
+                      style={{ position: 'absolute', top: '0.75rem', right: '0.75rem', fontSize: '0.65rem' }}
+                    >
                       {item.scorecard.overall_score}/10
                     </span>
                   )}
-                </div>
 
-                {/* Topic Title */}
-                <h4 style={{
-                  fontSize: '0.98rem',
-                  fontWeight: 700,
-                  color: 'var(--text-heading)',
-                  lineHeight: 1.4,
-                  marginBottom: '0.5rem'
-                }}>
-                  {item.topic}
-                </h4>
+                  {/* Timestamp */}
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', marginBottom: '0.3rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                    <Clock size={10} strokeWidth={2} />
+                    {item.timestamp}
+                  </div>
 
-                {/* Executive Snippet */}
-                <p style={{
-                  fontSize: '0.82rem',
-                  color: 'var(--text-secondary)',
-                  lineHeight: 1.5,
-                  margin: '0 0 0.85rem',
-                  display: '-webkit-box',
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden'
-                }}>
-                  {item.executive_summary}
-                </p>
-
-                {/* Bottom Row */}
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  paddingTop: '0.65rem',
-                  borderTop: '1px solid var(--border-subtle)'
-                }}>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--brand-accent)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                    Open Dossier <ArrowRight size={12} />
-                  </span>
-
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDeleteReport(item.id);
+                  {/* Title */}
+                  <h4
+                    style={{
+                      fontSize: '0.9rem',
+                      fontWeight: 600,
+                      color: 'var(--text-primary)',
+                      lineHeight: 1.4,
+                      marginBottom: '0.35rem',
+                      paddingRight: '3rem',
                     }}
-                    className="btn btn-ghost"
-                    style={{ padding: '0.2rem 0.4rem', color: 'var(--text-muted)' }}
-                    title="Delete from Library"
                   >
-                    <Trash2 size={14} />
-                  </button>
+                    {item.topic}
+                  </h4>
+
+                  {/* Snippet */}
+                  <p
+                    style={{
+                      fontSize: '0.78rem',
+                      color: 'var(--text-tertiary)',
+                      lineHeight: 1.5,
+                      margin: 0,
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {item.executive_summary}
+                  </p>
+
+                  {/* Footer */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginTop: '0.6rem',
+                      paddingTop: '0.6rem',
+                      borderTop: '1px solid var(--border-faint)',
+                    }}
+                  >
+                    <span style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                      Open <ArrowRight size={11} strokeWidth={2} />
+                    </span>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onDeleteReport(item.id); }}
+                      className="btn-danger"
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        padding: '0.2rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        color: 'var(--text-tertiary)',
+                        borderRadius: '4px',
+                        transition: 'color var(--t-fast)',
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.color = 'var(--red)'}
+                      onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-tertiary)'}
+                      title="Delete"
+                    >
+                      <Trash2 size={13} strokeWidth={2} />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))
+              ))}
+            </div>
           )}
         </div>
       </div>

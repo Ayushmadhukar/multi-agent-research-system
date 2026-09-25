@@ -1,6 +1,5 @@
 import React from 'react';
-import { Sparkles, History, Sun, Moon, ShieldCheck, Plus } from 'lucide-react';
-import Logo from './Logo';
+import { History, Sun, Moon, Plus, FlaskConical } from 'lucide-react';
 
 export default function Navbar({
   theme,
@@ -11,29 +10,29 @@ export default function Navbar({
   isGenerating = false,
 }) {
   const toggleTheme = () => {
-    const nextTheme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(nextTheme);
-    document.documentElement.setAttribute('data-theme', nextTheme);
+    const next = theme === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+    document.documentElement.setAttribute('data-theme', next);
   };
 
   return (
     <header
-      className="navbar"
       style={{
         position: 'sticky',
         top: 0,
         zIndex: 50,
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        backgroundColor: 'var(--bg-glass)',
-        borderBottom: '1px solid var(--border-subtle)',
-        padding: '0.85rem 1.5rem',
-        transition: 'all var(--transition-smooth)',
+        background: 'var(--bg-base)',
+        borderBottom: '1px solid var(--border-default)',
+        padding: '0 1.5rem',
+        height: '56px',
+        display: 'flex',
+        alignItems: 'center',
       }}
     >
       <div
         style={{
-          maxWidth: '1360px',
+          maxWidth: '1100px',
+          width: '100%',
           margin: '0 auto',
           display: 'flex',
           alignItems: 'center',
@@ -41,91 +40,82 @@ export default function Navbar({
           gap: '1rem',
         }}
       >
-        {/* Brand Logo Clickable to Reset */}
-        <div
+        {/* Logo */}
+        <button
           onClick={onNewResearch}
-          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-          title="Return to ResearchX Command Center"
-        >
-          <Logo size="md" showTagline={true} />
-        </div>
-
-        {/* Center Live Operational Badge */}
-        <div
-          className="nav-status-pill"
           style={{
             display: 'flex',
             alignItems: 'center',
             gap: '0.5rem',
-            padding: '0.35rem 0.85rem',
-            borderRadius: 'var(--radius-full)',
-            background: 'var(--bg-surface-elevated)',
-            border: '1px solid var(--border-medium)',
-            fontSize: '0.8rem',
-            fontWeight: 600,
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            padding: 0,
           }}
         >
+          <div
+            style={{
+              width: '28px',
+              height: '28px',
+              borderRadius: '7px',
+              background: 'var(--accent)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}
+          >
+            <FlaskConical size={15} color="#fff" strokeWidth={2} />
+          </div>
           <span
             style={{
-              display: 'inline-block',
-              width: '8px',
-              height: '8px',
-              borderRadius: '50%',
-              backgroundColor: isGenerating ? 'var(--brand-secondary)' : 'var(--brand-success)',
-              boxShadow: isGenerating
-                ? '0 0 10px #EC4899, 0 0 20px #EC4899'
-                : '0 0 10px #10B981, 0 0 15px #10B981',
-              animation: isGenerating ? 'pulseGlow 1.5s infinite' : 'none',
+              fontSize: '0.95rem',
+              fontWeight: 700,
+              color: 'var(--text-primary)',
+              letterSpacing: '-0.02em',
             }}
-          ></span>
-          <span style={{ color: 'var(--text-secondary)' }}>
-            {isGenerating ? 'Synthesizing Dossier...' : 'Neural Engine Active'}
+          >
+            ResearchX
           </span>
-          <span style={{ color: 'var(--border-medium)' }}>•</span>
-          <span style={{ color: 'var(--brand-accent)', fontSize: '0.75rem' }}>v2.4 Pro</span>
+        </button>
+
+        {/* Center: live status */}
+        <div className="status-chip" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+          <span
+            className={`live-dot ${isGenerating ? 'accent' : 'green'}`}
+          />
+          <span style={{ fontSize: '0.78rem' }}>
+            {isGenerating ? 'Running pipeline…' : 'Ready'}
+          </span>
         </div>
 
-        {/* Action Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-          {/* New Research Action */}
-          <button
-            onClick={onNewResearch}
-            className="btn btn-secondary"
-            style={{
-              padding: '0.5rem 0.95rem',
-              fontSize: '0.85rem',
-              borderRadius: 'var(--radius-md)',
-            }}
-            title="Start new research query"
-          >
-            <Plus size={16} color="var(--brand-primary)" />
-            <span style={{ fontWeight: 600 }}>New Query</span>
+        {/* Actions */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+          <button onClick={onNewResearch} className="btn btn-secondary" style={{ height: '34px', padding: '0 0.75rem', fontSize: '0.83rem' }}>
+            <Plus size={14} strokeWidth={2.5} />
+            New
           </button>
 
-          {/* Research Library / History Toggle */}
           <button
             onClick={onOpenHistory}
             className="btn btn-secondary"
-            style={{
-              position: 'relative',
-              padding: '0.5rem 0.95rem',
-              fontSize: '0.85rem',
-              borderRadius: 'var(--radius-md)',
-            }}
-            title="Open Research Library"
+            style={{ height: '34px', padding: '0 0.75rem', fontSize: '0.83rem', position: 'relative' }}
           >
-            <History size={16} color="var(--brand-accent)" />
-            <span>Library</span>
+            <History size={14} />
+            Library
             {historyCount > 0 && (
               <span
                 style={{
-                  background: 'var(--grad-logo)',
-                  color: '#FFF',
-                  fontSize: '0.7rem',
+                  background: 'var(--accent)',
+                  color: '#fff',
+                  fontSize: '0.68rem',
                   fontWeight: 700,
-                  padding: '2px 7px',
-                  borderRadius: '999px',
-                  marginLeft: '4px',
+                  padding: '0 5px',
+                  height: '16px',
+                  lineHeight: '16px',
+                  borderRadius: '99px',
+                  minWidth: '16px',
+                  textAlign: 'center',
                 }}
               >
                 {historyCount}
@@ -133,17 +123,16 @@ export default function Navbar({
             )}
           </button>
 
-          {/* Dark / Light Mode Switcher */}
           <button
             onClick={toggleTheme}
-            className="btn btn-secondary btn-icon"
-            style={{ borderRadius: 'var(--radius-md)' }}
-            title={theme === 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
+            className="btn btn-ghost btn-icon"
+            style={{ height: '34px', width: '34px' }}
+            title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
           >
             {theme === 'dark' ? (
-              <Sun size={18} color="#F59E0B" />
+              <Sun size={15} color="var(--text-secondary)" />
             ) : (
-              <Moon size={18} color="#8B5CF6" />
+              <Moon size={15} color="var(--text-secondary)" />
             )}
           </button>
         </div>

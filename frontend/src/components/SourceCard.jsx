@@ -1,123 +1,94 @@
 import React from 'react';
-import { ExternalLink, Globe } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 
 export default function SourceCard({ sources = [] }) {
   if (!sources || sources.length === 0) return null;
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.25rem', marginTop: '1rem' }}>
-      {sources.map((src, index) => {
-        const relevancePercent = Math.round((src.relevance_score || 0.95) * 100);
-
-        return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+      {sources.map((src, i) => (
+        <a
+          key={i}
+          href={src.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="card"
+          style={{
+            padding: '1rem 1.1rem',
+            display: 'flex',
+            gap: '0.875rem',
+            alignItems: 'flex-start',
+            textDecoration: 'none',
+            transition: 'border-color var(--t-fast)',
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--border-strong)'}
+          onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--border-default)'}
+        >
+          {/* Favicon placeholder */}
           <div
-            key={index}
-            className="glass-panel"
             style={{
-              padding: '1.5rem',
-              borderRadius: 'var(--radius-lg)',
-              background: 'var(--bg-surface)',
-              border: '1px solid var(--border-subtle)',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              position: 'relative',
-              transition: 'all var(--transition-smooth)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = 'var(--brand-accent)';
-              e.currentTarget.style.transform = 'translateY(-3px)';
-              e.currentTarget.style.boxShadow = '0 8px 24px rgba(6, 182, 212, 0.18)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = 'var(--border-subtle)';
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
-            }}
-          >
-            <div>
-              {/* Domain & Match Header */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.85rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <div style={{
-                    width: '28px',
-                    height: '28px',
-                    borderRadius: '6px',
-                    background: 'rgba(6, 182, 212, 0.15)',
-                    border: '1px solid rgba(6, 182, 212, 0.3)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'var(--brand-accent)'
-                  }}>
-                    <Globe size={14} />
-                  </div>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--brand-accent)' }}>
-                    {src.domain}
-                  </span>
-                </div>
-
-                <span className="badge badge-cyan" style={{ fontSize: '0.75rem' }}>
-                  {relevancePercent}% Match
-                </span>
-              </div>
-
-              {/* Title */}
-              <h4 style={{
-                fontSize: '1.05rem',
-                fontWeight: 700,
-                color: 'var(--text-heading)',
-                lineHeight: 1.4,
-                marginBottom: '0.5rem'
-              }}>
-                {src.title || `Source Citation [${index + 1}]`}
-              </h4>
-
-              {/* Snippet Preview */}
-              <p style={{
-                fontSize: '0.88rem',
-                color: 'var(--text-secondary)',
-                lineHeight: 1.55,
-                marginBottom: '1rem'
-              }}>
-                {src.snippet || 'Authoritative data source consulted in this synthesis.'}
-              </p>
-            </div>
-
-            {/* Linkout Action */}
-            <div style={{
-              paddingTop: '0.85rem',
-              borderTop: '1px solid var(--border-subtle)',
+              flexShrink: 0,
+              width: '28px',
+              height: '28px',
+              borderRadius: 'var(--r-sm)',
+              background: 'var(--bg-elevated)',
+              border: '1px solid var(--border-default)',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'space-between'
-            }}>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                Index #{index + 1}
-              </span>
+              justifyContent: 'center',
+              fontSize: '0.7rem',
+              fontWeight: 700,
+              color: 'var(--text-tertiary)',
+              textTransform: 'uppercase',
+              letterSpacing: '0',
+              fontFamily: 'var(--font-mono)',
+            }}
+          >
+            {(src.domain || 'S')[0].toUpperCase()}
+          </div>
 
-              <a
-                href={src.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn btn-secondary"
+          {/* Text */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '0.5rem', marginBottom: '0.2rem' }}>
+              <h4
                 style={{
-                  padding: '0.35rem 0.75rem',
-                  fontSize: '0.8rem',
-                  borderRadius: 'var(--radius-md)',
+                  fontSize: '0.875rem',
+                  fontWeight: 600,
                   color: 'var(--text-primary)',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.35rem'
+                  lineHeight: 1.3,
+                  margin: 0,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  flex: 1,
                 }}
               >
-                <span>Visit Source</span>
-                <ExternalLink size={12} color="var(--brand-accent)" />
-              </a>
+                {src.title || `Source ${i + 1}`}
+              </h4>
+              <ExternalLink size={12} color="var(--text-tertiary)" style={{ flexShrink: 0 }} />
             </div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--accent)', marginBottom: '0.3rem', fontWeight: 500 }}>
+              {src.domain}
+            </div>
+            {src.snippet && (
+              <p
+                style={{
+                  fontSize: '0.78rem',
+                  color: 'var(--text-tertiary)',
+                  lineHeight: 1.5,
+                  margin: 0,
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                }}
+              >
+                {src.snippet}
+              </p>
+            )}
           </div>
-        );
-      })}
+        </a>
+      ))}
     </div>
   );
 }

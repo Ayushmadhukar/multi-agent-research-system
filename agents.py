@@ -1,6 +1,6 @@
-from langchain.agents import create_agent
-from langchain_mistralai import ChatMistralAI
+from langgraph.prebuilt import create_react_agent
 from langchain_groq import ChatGroq
+from langchain_mistralai import ChatMistralAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from tools import web_search, scrape_website
@@ -9,34 +9,52 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-llm = ChatMistralAI(
-    model_name="mistral-small-latest",
-    mistral_api_key=os.getenv("MISTRAL_API_KEY")
-)
+def initialize_llm():
+    """Initializes the best available LLM: Groq if configured, otherwise Mistral."""
+    groq_api_key = os.getenv("GROQ_API_KEY")
+    use_groq = os.getenv("USE_GROQ", "true").lower() in ("1", "true", "yes")
 
-# Configure Groq model only if explicitly enabled and credentials are present.
-groq_model_name = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
-use_groq = os.getenv("USE_GROQ", "false").lower() in ("1", "true", "yes") and bool(os.getenv("GROQ_API_KEY"))
-models = None
-if use_groq:
-    try:
-        models = ChatGroq(
-            model=groq_model_name,
-            temperature=0,
-            groq_api_key=os.getenv("GROQ_API_KEY")
+    if use_groq and groq_api_key:
+        groq_model = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
+        try:
+            return ChatGroq(
+                model=groq_model,
+                temperature=0.1,
+                groq_api_key=groq_api_key
+            )
+        except Exception as e:
+            print(f"[agents] Warning: Failed to initialize Groq with {groq_model}: {e}")
+
+    # Fallback to Mistral
+    mistral_api_key = os.getenv("MISTRAL_API_KEY")
+    if mistral_api_key:
+        try:
+            return ChatMistralAI(
+                model_name=os.getenv("MISTRAL_MODEL", "mistral-small-latest"),
+                mistral_api_key=mistral_api_key
+            )
+        except Exception as e:
+            print(f"[agents] Warning: Failed to initialize Mistral: {e}")
+
+    # Fallback to Groq with lightweight model
+    if groq_api_key:
+        return ChatGroq(
+            model="openai/gpt-oss-20b",
+            temperature=0.1,
+            groq_api_key=groq_api_key
         )
-    except Exception:
-        models = None
+    raise RuntimeError("No valid LLM configuration found. Please check GROQ_API_KEY or MISTRAL_API_KEY in .env.")
+
+llm = initialize_llm()
 
 def build_search_agent():
-    # Prefer Groq if available; otherwise fall back to the Mistral LLM.
-    return create_agent(
-        model = models if models is not None else llm,
+    return create_react_agent(
+        model = llm,
         tools = [web_search]
     )
 
 def build_reader_agent():
-    return create_agent(
+    return create_react_agent(
         model = llm,
         tools = [scrape_website]
     )   
@@ -62,7 +80,7 @@ Be detailed, factual and professional."""),
 writer_chain = writer_prompt | llm | StrOutputParser()
 
 critic_prompt = ChatPromptTemplate.from_messages([
-     ("system", "You are a sharp and constructive research critic. Be honest and specific."),
+    ("system", "You are a sharp and constructive research critic. Be honest and specific."),
     ("human", """Review the research report below and evaluate it strictly.
 
 Report:
@@ -84,6 +102,4 @@ One line verdict:
 ..."""),
 ])
 
-critic_chain = critic_prompt | (models if models is not None else llm) | StrOutputParser()
-
- 
+critic_chain = critic_prompt | llm | StrOutputParser()

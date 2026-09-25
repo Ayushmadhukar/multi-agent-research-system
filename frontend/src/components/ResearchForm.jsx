@@ -1,19 +1,26 @@
-import React, { useState } from 'react';
-import { Search, Sparkles, Zap, Compass, Cpu, Layers, ArrowRight, Shield } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Search, ArrowRight, Zap, ChevronDown } from 'lucide-react';
 
-const PRESET_TOPICS = [
-  { label: 'Autonomous Agentic AI', icon: '🤖', query: 'Autonomous Multi-Agent Systems in Enterprise Orchestration 2026' },
-  { label: 'Solid-State Batteries', icon: '⚡', query: 'Solid State Battery Electrolyte Breakthroughs & Commercial Scaling' },
-  { label: 'Post-Quantum Crypto', icon: '🔐', query: 'NIST Post-Quantum Cryptographic Migration Standards & Lattice Algorithms' },
-  { label: 'CRISPR Epigenomics', icon: '🧬', query: 'CRISPR Epigenome Editing and In-Vivo Delivery Advances' },
-  { label: 'Neuromorphic Chips', icon: '🧠', query: 'Neuromorphic Computing Architecture & Low-Power Edge AI Silicon' },
-  { label: 'Fusion Energy Net Gain', icon: '☀️', query: 'Magnetic Confinement Fusion Net Energy Gain & High-Temperature Superconductors' },
+const PRESETS = [
+  { label: 'Agentic AI Systems',       query: 'Autonomous Multi-Agent Systems in Enterprise 2026' },
+  { label: 'Solid-State Batteries',    query: 'Solid State Battery Electrolyte Breakthroughs & Commercial Scaling' },
+  { label: 'Post-Quantum Crypto',      query: 'NIST Post-Quantum Cryptographic Migration & Lattice Algorithms' },
+  { label: 'CRISPR Epigenomics',       query: 'CRISPR Epigenome Editing and In-Vivo Delivery Advances' },
+  { label: 'Neuromorphic Chips',       query: 'Neuromorphic Computing Architecture & Low-Power Edge AI Silicon' },
+  { label: 'Fusion Energy',            query: 'Magnetic Confinement Fusion Net Energy Gain & Superconductors' },
+];
+
+const DEPTH_OPTIONS = [
+  { id: 'quick',    label: 'Quick',         desc: 'Fast summary' },
+  { id: 'standard', label: 'Standard',      desc: 'Balanced depth' },
+  { id: 'deep',     label: 'Comprehensive', desc: 'Full dossier' },
 ];
 
 export default function ResearchForm({ onStartResearch, isLoading = false }) {
   const [topic, setTopic] = useState('');
-  const [depth, setDepth] = useState('standard'); // 'quick', 'standard', 'deep'
+  const [depth, setDepth] = useState('standard');
   const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef(null);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -21,239 +28,209 @@ export default function ResearchForm({ onStartResearch, isLoading = false }) {
     onStartResearch(topic.trim(), depth);
   };
 
-  const handleSelectPreset = (presetQuery) => {
-    setTopic(presetQuery);
-    onStartResearch(presetQuery, depth);
+  const handlePreset = (query) => {
+    setTopic(query);
+    setTimeout(() => onStartResearch(query, depth), 50);
   };
 
   return (
-    <section className="research-form-section" style={{ padding: '2.5rem 1rem 3rem', maxWidth: '1000px', margin: '0 auto', textAlign: 'center' }}>
-      
-      {/* Visual Accent Pill */}
-      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem' }}>
-        <span className="badge badge-purple" style={{ padding: '0.4rem 0.9rem', fontSize: '0.8rem' }}>
-          <Sparkles size={14} color="#C4B5FD" />
-          Autonomous Multi-Agent Intelligence Engine
-        </span>
+    <div style={{ padding: '4rem 1.5rem 3rem', maxWidth: '720px', margin: '0 auto' }}>
+
+      {/* Header */}
+      <div style={{ marginBottom: '2.5rem', textAlign: 'center' }}>
+        <div
+          className="badge badge-accent"
+          style={{ marginBottom: '1rem', display: 'inline-flex', padding: '0.25rem 0.75rem' }}
+        >
+          <Zap size={11} strokeWidth={2.5} />
+          Multi-Agent Research Engine
+        </div>
+        <h1
+          style={{
+            fontSize: 'clamp(1.8rem, 4vw, 2.5rem)',
+            fontWeight: 700,
+            letterSpacing: '-0.03em',
+            lineHeight: 1.2,
+            color: 'var(--text-primary)',
+            marginBottom: '0.75rem',
+          }}
+        >
+          Research anything,
+          <br />
+          <span style={{ color: 'var(--accent)' }}>synthesized instantly.</span>
+        </h1>
+        <p
+          style={{
+            color: 'var(--text-secondary)',
+            fontSize: '1rem',
+            maxWidth: '480px',
+            margin: '0 auto',
+            lineHeight: 1.6,
+          }}
+        >
+          Four specialized AI agents search, read, write, and peer-review — delivering a structured intelligence report in seconds.
+        </p>
       </div>
 
-      {/* Hero Headline */}
-      <h1 style={{
-        fontSize: 'clamp(2.2rem, 5vw, 3.4rem)',
-        fontWeight: 800,
-        letterSpacing: '-0.03em',
-        lineHeight: 1.15,
-        marginBottom: '1rem'
-      }}>
-        Accelerate Deep Discovery with <br />
-        <span className="gradient-text-rainbow">Executive Precision</span>
-      </h1>
-
-      <p style={{
-        color: 'var(--text-secondary)',
-        fontSize: '1.15rem',
-        maxWidth: '700px',
-        margin: '0 auto 2.5rem',
-        lineHeight: 1.6
-      }}>
-        Synthesize multi-source verified intelligence, peer-reviewed evidence, structured takeaways, and executive scorecards in seconds.
-      </p>
-
-      {/* Glowing Command Input Card */}
-      <form
-        onSubmit={handleSubmit}
-        className="glass-panel"
-        style={{
-          padding: '0.75rem',
-          borderRadius: 'var(--radius-xl)',
-          border: isFocused ? '1px solid var(--brand-primary)' : '1px solid var(--border-medium)',
-          boxShadow: isFocused ? 'var(--glow-primary), var(--shadow-lg)' : 'var(--shadow-md)',
-          background: 'var(--bg-glass-strong)',
-          transition: 'all var(--transition-smooth)',
-          position: 'relative',
-          marginBottom: '1.75rem'
-        }}
-      >
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.75rem',
-          flexWrap: 'nowrap'
-        }}>
-          {/* Glowing Search Icon */}
-          <div style={{
-            paddingLeft: '0.75rem',
-            display: 'flex',
-            alignItems: 'center',
-            color: isFocused ? 'var(--brand-accent)' : 'var(--text-muted)',
-            transition: 'color 0.2s ease'
-          }}>
-            <Search size={24} />
+      {/* Search form */}
+      <form onSubmit={handleSubmit} style={{ marginBottom: '1.5rem' }}>
+        <div
+          style={{
+            background: 'var(--bg-surface)',
+            border: `1px solid ${isFocused ? 'var(--border-focus)' : 'var(--border-default)'}`,
+            borderRadius: 'var(--r-lg)',
+            boxShadow: isFocused
+              ? '0 0 0 3px var(--accent-dim), var(--shadow-sm)'
+              : 'var(--shadow-sm)',
+            transition: 'all var(--t-fast)',
+            overflow: 'hidden',
+          }}
+        >
+          {/* Input row */}
+          <div style={{ display: 'flex', alignItems: 'center', padding: '4px 4px 4px 1rem' }}>
+            <Search
+              size={17}
+              color={isFocused ? 'var(--accent)' : 'var(--text-tertiary)'}
+              style={{ flexShrink: 0, transition: 'color var(--t-fast)' }}
+            />
+            <input
+              ref={inputRef}
+              type="text"
+              value={topic}
+              onChange={(e) => setTopic(e.target.value)}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              placeholder="Enter a topic, technology, or question to research…"
+              disabled={isLoading}
+              style={{
+                flex: 1,
+                background: 'transparent',
+                border: 'none',
+                outline: 'none',
+                color: 'var(--text-primary)',
+                fontSize: '0.95rem',
+                fontFamily: 'var(--font)',
+                padding: '0.75rem 0.75rem',
+              }}
+            />
+            <button
+              type="submit"
+              disabled={!topic.trim() || isLoading}
+              className="btn btn-primary"
+              style={{ height: '40px', padding: '0 1.1rem', fontSize: '0.875rem', flexShrink: 0 }}
+            >
+              {isLoading ? (
+                <>
+                  <span
+                    style={{
+                      width: '14px',
+                      height: '14px',
+                      border: '2px solid rgba(255,255,255,0.3)',
+                      borderTopColor: '#fff',
+                      borderRadius: '50%',
+                      display: 'inline-block',
+                    }}
+                    className="animate-spin"
+                  />
+                  Running…
+                </>
+              ) : (
+                <>
+                  Analyze
+                  <ArrowRight size={14} strokeWidth={2.5} />
+                </>
+              )}
+            </button>
           </div>
 
-          {/* Primary Text Input */}
-          <input
-            type="text"
-            value={topic}
-            onChange={(e) => setTopic(e.target.value)}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
-            placeholder="Enter any research subject, breakthrough technology, market sector..."
-            disabled={isLoading}
+          {/* Depth row */}
+          <div
             style={{
-              flex: 1,
-              background: 'transparent',
-              border: 'none',
-              outline: 'none',
-              color: 'var(--text-primary)',
-              fontSize: '1.1rem',
-              fontFamily: 'var(--font-body)',
-              padding: '0.75rem 0.25rem',
-            }}
-          />
-
-          {/* Submit Action Button */}
-          <button
-            type="submit"
-            disabled={!topic.trim() || isLoading}
-            className="btn btn-primary"
-            style={{
-              padding: '0.85rem 1.6rem',
-              fontSize: '1rem',
-              borderRadius: 'var(--radius-lg)',
-              opacity: !topic.trim() || isLoading ? 0.6 : 1,
-              cursor: !topic.trim() || isLoading ? 'not-allowed' : 'pointer'
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem',
+              padding: '0.5rem 1rem 0.625rem',
+              borderTop: '1px solid var(--border-faint)',
             }}
           >
-            {isLoading ? (
-              <>
-                <div style={{
-                  width: '18px',
-                  height: '18px',
-                  border: '2px solid rgba(255,255,255,0.3)',
-                  borderTopColor: '#FFF',
-                  borderRadius: '50%',
-                  animation: 'spinSlow 0.8s linear infinite'
-                }}></div>
-                <span>Synthesizing...</span>
-              </>
-            ) : (
-              <>
-                <span>Synthesize</span>
-                <ArrowRight size={18} />
-              </>
-            )}
-          </button>
-        </div>
-
-        {/* Depth Selector Bar */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          borderTop: '1px solid var(--border-subtle)',
-          paddingTop: '0.75rem',
-          marginTop: '0.65rem',
-          paddingLeft: '0.5rem',
-          paddingRight: '0.5rem',
-          flexWrap: 'wrap',
-          gap: '0.75rem'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-            <Layers size={14} color="var(--brand-accent)" />
-            <span>Research Depth:</span>
-          </div>
-
-          <div style={{ display: 'flex', gap: '0.4rem' }}>
-            {[
-              { id: 'quick', label: '⚡ Quick Brief', desc: 'Fast Executive TL;DR' },
-              { id: 'standard', label: '🚀 Standard Synthesis', desc: 'Deep Multi-Source' },
-              { id: 'deep', label: '🧠 Comprehensive Dossier', desc: 'Exhaustive Rigor' },
-            ].map((option) => (
-              <button
-                key={option.id}
-                type="button"
-                onClick={() => setDepth(option.id)}
-                style={{
-                  background: depth === option.id ? 'var(--grad-logo)' : 'var(--bg-surface-elevated)',
-                  color: depth === option.id ? '#FFFFFF' : 'var(--text-secondary)',
-                  border: depth === option.id ? 'none' : '1px solid var(--border-subtle)',
-                  borderRadius: 'var(--radius-full)',
-                  padding: '0.35rem 0.85rem',
-                  fontSize: '0.8rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  transition: 'all var(--transition-fast)',
-                  boxShadow: depth === option.id ? '0 2px 10px rgba(139, 92, 246, 0.4)' : 'none'
-                }}
-              >
-                {option.label}
-              </button>
-            ))}
+            <span style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)', whiteSpace: 'nowrap' }}>
+              Depth:
+            </span>
+            <div style={{ display: 'flex', gap: '0.25rem' }}>
+              {DEPTH_OPTIONS.map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setDepth(opt.id)}
+                  style={{
+                    background: depth === opt.id ? 'var(--accent-dim)' : 'transparent',
+                    color: depth === opt.id ? 'var(--accent-hover)' : 'var(--text-tertiary)',
+                    border: `1px solid ${depth === opt.id ? 'var(--accent-border)' : 'transparent'}`,
+                    borderRadius: 'var(--r-sm)',
+                    padding: '0.2rem 0.6rem',
+                    fontSize: '0.78rem',
+                    fontWeight: depth === opt.id ? 600 : 400,
+                    cursor: 'pointer',
+                    transition: 'all var(--t-fast)',
+                    fontFamily: 'var(--font)',
+                  }}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </form>
 
-      {/* Preset Topics Pills */}
-      <div style={{ textAlign: 'left', marginTop: '1.5rem' }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem',
-          fontSize: '0.85rem',
-          color: 'var(--text-muted)',
-          marginBottom: '0.75rem',
-          fontWeight: 600,
-          textTransform: 'uppercase',
-          letterSpacing: '0.05em'
-        }}>
-          <Zap size={14} color="var(--brand-secondary)" />
-          <span>Trending Intelligence Tracks</span>
+      {/* Preset suggestions */}
+      <div>
+        <div
+          style={{
+            fontSize: '0.75rem',
+            fontWeight: 600,
+            color: 'var(--text-tertiary)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.06em',
+            marginBottom: '0.6rem',
+          }}
+        >
+          Suggested topics
         </div>
-
-        <div style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: '0.6rem',
-        }}>
-          {PRESET_TOPICS.map((item, idx) => (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+          {PRESETS.map((item, idx) => (
             <button
               key={idx}
               type="button"
-              onClick={() => handleSelectPreset(item.query)}
+              onClick={() => handlePreset(item.query)}
               disabled={isLoading}
-              className="glass-panel"
               style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.45rem',
-                padding: '0.5rem 0.95rem',
-                borderRadius: 'var(--radius-full)',
-                fontSize: '0.85rem',
-                fontWeight: 500,
-                color: 'var(--text-primary)',
-                cursor: 'pointer',
                 background: 'var(--bg-surface)',
-                border: '1px solid var(--border-subtle)',
-                transition: 'all var(--transition-smooth)'
+                color: 'var(--text-secondary)',
+                border: '1px solid var(--border-default)',
+                borderRadius: 'var(--r-full)',
+                padding: '0.3rem 0.75rem',
+                fontSize: '0.82rem',
+                fontFamily: 'var(--font)',
+                cursor: 'pointer',
+                transition: 'all var(--t-fast)',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = 'var(--brand-primary)';
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 4px 15px rgba(139, 92, 246, 0.25)';
+                e.currentTarget.style.color = 'var(--text-primary)';
+                e.currentTarget.style.borderColor = 'var(--border-strong)';
+                e.currentTarget.style.background = 'var(--bg-elevated)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'var(--border-subtle)';
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = 'none';
+                e.currentTarget.style.color = 'var(--text-secondary)';
+                e.currentTarget.style.borderColor = 'var(--border-default)';
+                e.currentTarget.style.background = 'var(--bg-surface)';
               }}
             >
-              <span>{item.icon}</span>
-              <span>{item.label}</span>
+              {item.label}
             </button>
           ))}
         </div>
       </div>
-    </section>
+    </div>
   );
 }
